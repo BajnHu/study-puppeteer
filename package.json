@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "anywhere": "^1.5.0",
+    "like-anywhere": "^0.1.4",
     "puppeteer": "^1.6.0"
   }
 }

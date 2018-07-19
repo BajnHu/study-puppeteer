@@ -4,7 +4,13 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
+mn/*.jpg
+mn/*.png
+mn/*.gif
+screenshot/*.jpg
+screenshot/*.png
+screenshot/*.gif
+.idea
 # Runtime data
 pids
 *.pid

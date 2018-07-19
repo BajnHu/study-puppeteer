@@ -30,6 +30,7 @@ const urlToImg = promisify((url, dir, callback) => {
                 })
         })
     }catch (e){ // 协议不支持
+        console.log('协议不支持')
         mod = /'^https'/.test(url) ? http : https
         mod.get(url, res => {
             res.pipe(fs.createWriteStream(filename))

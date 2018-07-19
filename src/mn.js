@@ -6,7 +6,7 @@ const saveImg = require('./helper/saveImg')
         // headless: false
     });
     const page = await browser.newPage();
-    await page.goto('https://image.baidu.com/');
+    await page.goto('http://haha.sogou.com/4937239/');
 
     console.log('go to baiduImage')
     await page.setViewport({
@@ -14,10 +14,6 @@ const saveImg = require('./helper/saveImg')
         height: 1000
     })
     console.log('reset viewport')
-
-    await page.focus('#kw')
-    await page.keyboard.sendCharacter('壁纸')
-    await page.click('.s_search')
 
     console.log('go to search result list')
 
