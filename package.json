@@ -1,17 +1,28 @@
 {
-  "name": "headless",
+  "name": "study-puppeteer",
   "version": "1.0.0",
-  "description": "",
+  "description": "pachong",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/scroll.js"
-  },
-  "author": "",
-  "license": "ISC",
+  "dependencies": {},
   "devDependencies": {
-    "anywhere": "^1.5.0",
-    "like-anywhere": "^0.1.4",
-    "puppeteer": "^1.6.0"
-  }
+    "mongoose": "^5.2.4",
+    "puppeteer": "^1.6.0",
+    "mongodb": "^3.1.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/objectBao/study-puppeteer.git"
+  },
+  "keywords": [
+    "suppeteer"
+  ],
+  "author": "hubaojun",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/objectBao/study-puppeteer/issues"
+  },
+  "homepage": "https://github.com/objectBao/study-puppeteer#readme"
 }

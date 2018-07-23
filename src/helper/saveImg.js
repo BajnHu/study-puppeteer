@@ -17,7 +17,7 @@ module.exports = async (src, dir) => {
 
 }
 
-// url => image
+// url => db_image.js
 const urlToImg = promisify((url, dir, callback) => {
     let mod = /'^https'/.test(url) ? https : http
     const ext = path.extname(url)
@@ -42,7 +42,7 @@ const urlToImg = promisify((url, dir, callback) => {
 
 })
 
-//base64 => image
+//base64 => db_image.js
 
 const base64TpImg = async (base64Str, dir) => {
     let matches = base64Str.match(/^data:(.+?);base64,(.+)$/)
