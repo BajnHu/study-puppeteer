@@ -3,7 +3,7 @@ const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 const saveImage = require('./common/saveImage')
 const saveVideo = require('./common/saveVideo')
 const saveText = require('./common/saveText');
-const {totalPageNum} = require('./config/default')
+// const {totalPageNum} = require('./config/default')
 const mongoose = require('mongoose')
 
 mongoose.connect('mongodb://localhost:27017/my_joke')
@@ -42,8 +42,12 @@ const JokeModel = require('./db/jokeSchema')
         if(err){
             console.log(err)
         }
-        var id = jokes[jokes.length-1].id
-        console.log(jokes[jokes.length-1])
+        let  id
+        if(jokes.length===0){
+           id = '4802089'
+        }else{
+           id = jokes[jokes.length-1].id
+        }
         await page.goto(`http://haha.sogou.com/${id}/`)
         saveData(page)
     })
