@@ -33,6 +33,13 @@ imageSchema.statics = {
             .find({id:id})
             .sort('meta.updateAt')
             .exec(cb)
+    },
+    findNextById:function(id,cb){
+        return this
+            .find({id: id})
+            .limit(10)
+            .sort({'meta.updateAt': -1 })
+            .exec(cb);
     }
 }
 

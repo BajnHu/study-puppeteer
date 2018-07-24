@@ -3,10 +3,8 @@ const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 
 const saveImage = require('./common/saveImage')
 const saveVideo = require('./common/saveVideo')
 const saveText = require('./common/saveText');
-const {totalPageNum} = require('./config/default')
+const JokeModel = require('./db/jokeSchema')
 const mongoose = require('mongoose')
-
-mongoose.connect('mongodb://localhost:27017/my_joke')
 // 连接失败
 mongoose.connection.on("error", function(err){
     console.error("数据库链接失败:"+ err);
@@ -20,12 +18,7 @@ mongoose.connection.on("disconnected", function() {
     console.log("数据库断开");
 })
 
-const JokeModel = require('./db/jokeSchema')
-
-
-
-;(async () => {
-
+module.exports = async () => {
     const browser = await puppeteer.launch({
         headless: false
         // executablePath:chrome_exe
@@ -43,12 +36,11 @@ const JokeModel = require('./db/jokeSchema')
             console.log(err)
         }
         var id = jokes[jokes.length-1].id
-        console.log(jokes[jokes.length-1])
+        console.log("start Data: " + jokes[jokes.length-1])
         await page.goto(`http://haha.sogou.com/${id}/`)
         saveData(page)
     })
-})();
-
+}
 let saveData = async function (page) {
     console.log('elements loading')
     await page.waitFor('#mediaplayer')

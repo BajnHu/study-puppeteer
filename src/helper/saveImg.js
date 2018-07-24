@@ -9,7 +9,6 @@ const wirteFile = promisify(fs.writeFile)
 module.exports = async (src, dir) => {
 
     if(/\.(jpg|png|gif)$/.test(src)&&/^http/.test(src)){
-        console.log(src)
         await urlToImg(src,dir)
     }else{
         await base64TpImg(src,dir)
