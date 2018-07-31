@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 
 let imageSchema = new  mongoose.Schema({
     id:String,
+    index:Number,
     title:String,
     content:String,
     type:String,
@@ -34,12 +35,11 @@ imageSchema.statics = {
             .sort('meta.updateAt')
             .exec(cb)
     },
-    findNextById:function(id,cb){
+    fondLast:function (cb) {
         return this
-            .find({id: id})
-            .limit(10)
-            .sort({'meta.updateAt': -1 })
-            .exec(cb);
+            .findOne({})
+            .sort({'meta.updateAt':-1})
+            .exec(cb)
     }
 }
 

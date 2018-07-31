@@ -8,7 +8,9 @@ const JokeModel = require('./db/jokeSchema')
 
 // const {totalPageNum} = require('./config/default')
 
+
 const mongoose = require('mongoose')
+mongoose.connect('mongodb://localhost:27017/my_joke')
 // 连接失败
 mongoose.connection.on("error", function(err){
     console.error("数据库链接失败:"+ err);
@@ -22,38 +24,7 @@ mongoose.connection.on("disconnected", function() {
     console.log("数据库断开");
 })
 
-module.exports = async () => {
-    const browser = await puppeteer.launch({
-        headless: false
-        // executablePath:chrome_exe
-    })
-    const page = await browser.newPage()
-    await page.setUserAgent(userAgent)
-    console.log('reset viewport')
-    await page.setViewport({
-        width: 1920,
-        height: 1080
-    })
 
-    JokeModel.fetch(async (err,jokes)=>{
-        if(err){
-            console.log(err)
-        }
-
-        var id = jokes[jokes.length-1].id
-        console.log("start Data: " + jokes[jokes.length-1])
-
-        let  id
-        if(jokes.length===0){
-           id = '4802089'
-        }else{
-           id = jokes[jokes.length-1].id
-        }
-
-        await page.goto(`http://haha.sogou.com/${id}/`)
-        saveData(page)
-    })
-}
 let saveData = async function (page) {
     console.log('elements loading')
     await page.waitFor('#mediaplayer')
@@ -117,4 +88,36 @@ let nextPage = async function (page) {
     await page.keyboard.press('ArrowRight');
     await page.waitFor(3000)
     saveData(page);
+}
+
+module.exports = async () => {
+    const browser = await puppeteer.launch({
+        // headless: false
+        // executablePath:chrome_exe
+    });
+    const page = await browser.newPage()
+    await page.setUserAgent(userAgent)
+    console.log('reset viewport')
+    await page.setViewport({
+        width: 1920,
+        height: 1080
+    })
+
+    JokeModel.fetch(async (err,jokes)=>{
+        if(err){
+            console.log(err)
+            return ;
+        }
+        var id = jokes[jokes.length-1].id
+        // console.log("start Data: " + jokes[jokes.length-1])
+        //
+        // let  id
+        if(jokes.length===0){
+            id = '4802089'
+        }else{
+            id = jokes[jokes.length-1].id
+        }
+        await page.goto(`http://haha.sogou.com/${id}/`)
+        saveData(page)
+    })
 }
