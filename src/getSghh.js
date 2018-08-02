@@ -10,7 +10,7 @@ const JokeModel = require('./db/jokeSchema')
 
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb://localhost:27017/my_joke')
+mongoose.connect('mongodb://localhost:27017/jokeCang')
 // 连接失败
 mongoose.connection.on("error", function(err){
     console.error("数据库链接失败:"+ err);
@@ -24,7 +24,9 @@ mongoose.connection.on("disconnected", function() {
     console.log("数据库断开");
 })
 
-
+let lastDataInfo = {
+    index:0
+}
 let saveData = async function (page) {
     console.log('elements loading')
     await page.waitFor('#mediaplayer')
@@ -57,7 +59,8 @@ let saveData = async function (page) {
                 saveImage({
                     htmlStr,
                     title,
-                    id:currentId
+                    id:currentId,
+                    lastDataInfo
                 },function () {
                     nextPage(page)
                 })
@@ -66,7 +69,8 @@ let saveData = async function (page) {
                 saveVideo({
                     title,
                     htmlStr,
-                    id:currentId
+                    id:currentId,
+                    lastDataInfo
                 },function () {
                     nextPage(page)
                 })
@@ -75,7 +79,8 @@ let saveData = async function (page) {
                 saveText({
                     title,
                     content,
-                    id:currentId
+                    id:currentId,
+                    lastDataInfo
                 },function () {
                     nextPage(page)
                 })
@@ -102,20 +107,19 @@ module.exports = async () => {
         width: 1920,
         height: 1080
     })
-
     JokeModel.fetch(async (err,jokes)=>{
         if(err){
             console.log(err)
             return ;
         }
-        var id = jokes[jokes.length-1].id
-        // console.log("start Data: " + jokes[jokes.length-1])
-        //
-        // let  id
+        var id
         if(jokes.length===0){
+            lastDataInfo.index = 0
             id = '4802089'
         }else{
-            id = jokes[jokes.length-1].id
+            let lastData = jokes[jokes.length-1]
+            lastDataInfo.index  = lastData.index+1
+            id = lastData.id
         }
         await page.goto(`http://haha.sogou.com/${id}/`)
         saveData(page)

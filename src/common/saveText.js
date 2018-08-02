@@ -13,10 +13,12 @@ module.exports = async function (textData, fn) {
            content:textData.content,
            type:'text',
            id:textData.id,
+           index:textData.lastDataInfo.index
        },function (err,doc) {
            if(err){
                console.error(err)
            }else{
+               textData.lastDataInfo.index++
                console.log(["INSERT SUCCESS"]+" ：" + doc.id);
            }
        })

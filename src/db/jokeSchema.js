@@ -43,6 +43,6 @@ imageSchema.statics = {
     }
 }
 
-const joke = mongoose.model("my_joke",imageSchema,'my_joke')
+const joke = mongoose.model("jokeCang",imageSchema,'jokeCang')
 
 module.exports = joke

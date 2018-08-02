@@ -10,16 +10,19 @@ const JokeModel = require('../db/jokeSchema')
 module.exports = async function (imgData, fn) {
     let newUrl = imgData.htmlStr.match(/src="(.+?)"/)[1]
     newUrl = newUrl.replace(/&amp;/g,'&')
+    newUrl = newUrl.match(/http:\/\/(.+?)(.jpg|.png|.gif)/g)
     try {
         JokeModel.create({
             content: newUrl,
             title: imgData.title,
             id:imgData.id,
-            type:'img'
+            type:'img',
+            index:imgData.lastDataInfo.index
         },function (err,doc) {
             if(err){
                 console.error(err)
             }else{
+                imgData.lastDataInfo.index++;
                 console.log(["INSERT SUCCESS"]+" ：" + doc.id);
             }
         })

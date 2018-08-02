@@ -19,11 +19,13 @@ module.exports = async (videoData ,fn)=>{
             title:videoData.title,
             content:videoData.url,
             id:videoData.id,
-            type:'video'
+            type:'video',
+            index:videoData.lastDataInfo.index
         },function (err,doc) {
             if(err){
                 console.error(err)
             }else{
+                videoData.lastDataInfo.index++
                 console.log(["INSERT SUCCESS"]+" ：" + doc.id);
             }
         })
