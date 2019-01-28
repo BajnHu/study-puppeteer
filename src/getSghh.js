@@ -10,18 +10,14 @@ const JokeModel = require('./db/jokeSchema')
 
 
 const mongoose = require('mongoose')
-mongoose.connect('mongodb://localhost:27017/jokeCang')
-// 连接失败
-mongoose.connection.on("error", function(err){
-    console.error("数据库链接失败:"+ err);
-});
-// 连接成功
-mongoose.connection.on("open", function(){
-    console.log("数据库链接成功");
-});
-// 断开数据库
-mongoose.connection.on("disconnected", function() {
-    console.log("数据库断开");
+mongoose.connect('mongodb://localhost:27017/jokeCang',{
+  useNewUrlParser:true
+},function(err){
+  if(err){
+    console.log('error:'+err)
+  }else{
+    console.log('success')
+  }
 })
 
 let lastDataInfo = {
