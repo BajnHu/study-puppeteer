@@ -8,16 +8,18 @@ const JokeModel = require('../db/jokeSchema')
 
 
 module.exports = async function (imgData, fn) {
+    // 获取html 中的 图片url
     let newUrl = imgData.htmlStr.match(/src="(.+?)"/)[1]
     newUrl = newUrl.replace(/&amp;/g,'&')
-    newUrl = newUrl.match(/http:\/\/(.+?)(.jpg|.png|.gif)/g)
+    newUrl = newUrl.match(/http:\/\/(.+?)(.jpg|.png|.gif)/g);
+
     try {
         JokeModel.create({
             content: newUrl,
             title: imgData.title,
             id:imgData.id,
             type:'img',
-            index:imgData.lastDataInfo.index
+            tags:imgData.tags
         },function (err,doc) {
             if(err){
                 console.error(err)
@@ -27,38 +29,8 @@ module.exports = async function (imgData, fn) {
             }
         })
     } catch (e) {
-        if (e) {
             console.log(e)
-        }
     }
-    if (fn) {
-        fn()
-    }
+    fn&&fn.constructor===Function&&fn();
 }
-
-// module.exports = async function (imgData, fn) {
-//     let newUrl = imgData.htmlStr.match(/src="(.+?)"/)[1]
-//     newUrl = newUrl.replace(/&amp;/g,'&')
-//     try {
-//         var oldData = await readFile(imagesDataPath)
-//
-//         oldData = JSON.parse(oldData.toString())
-//         if (!oldData.data) {
-//             oldData = {"data": []}
-//         }
-//         oldData.data.push({
-//             url: newUrl,
-//             title: imgData.title
-//         })
-//         let dataStr = JSON.stringify(oldData)
-//         await wirteFile(imagesDataPath, dataStr)
-//     } catch (e) {
-//         if (e) {
-//             console.log(e)
-//         }
-//     }
-//     if (fn) {
-//         fn()
-//     }
-// }
 

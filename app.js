@@ -5,17 +5,15 @@ const mongoose = require('mongoose')
 const JokeModel = require('./src/db/jokeSchema')
 
 
-mongoose.connect('mongodb://localhost:27017/jokeCang',{
-  useNewUrlParser:true
-},function(err,db){
-  if(err){
-    console.log('error:'+err)
-  }else{
-    console.log('success')
-  }
+mongoose.connect('mongodb://localhost:27017/jokeCang', {
+    useNewUrlParser: true
+}, function (err, db) {
+    if (err) {
+        console.log('error:' + err)
+    } else {
+        console.log('success')
+    }
 })
-
-
 
 
 // 设置 响应头
@@ -39,58 +37,52 @@ console.log(`server start in port: ${port}`)
 app.get('/api/getJokeData', (req, res) => {
     let data
     let code
-    let _callback = req.query.jsonpCallback;
+    // let _callback = req.query.jsonpCallback;
     // 有元素索引  并且 不为空
-    if ('listindex' in req.query && req.query.listindex !== '') {
-        let index = req.query.listindex;
-        // 数据库 根据index 查询
-        JokeModel.findOne({"index": index}, function(err, joke){
-            if (err) {
-                data = null
-                code = 1
-                res.status(500)
-            } else {
-                res.status(200)
-                if(joke){
-                    data = joke
-                    code = 0
-                }else{
-                    data = null
-                    code = 1
-                }
-            }
-            if (_callback) {
-                res.type('text/javascript');
-                res.send(_callback + '(' + JSON.stringify({
-                    data,
-                    date: Date.now(),
-                    code
-                }) + ')');
-            }
-        })
-    } else { // 元素索引 为空
-        // 数据库查询
-        JokeModel.fondLast(function (err, joke) {
-            console.log(err,joke)
-            if (err) {
-                data = null
-                code = 1
-                res.status(500)
-            } else {
-                data = joke;
-                res.status(200)
-                code = 0
-            }
+    let { startkey = '' } = req.query;
 
-            res.type('text/javascript');
-            res.send(_callback + '(' + JSON.stringify({
-                data,
-                date: Date.now(),
-                code
-            }) + ')');
+    // 数据库 根据index 查询
+    JokeModel.findPage({ startkey }, function (err, jokes) {
+        if (err) {
+            data = null
+            code = 1
+            res.status(500)
+            console.log('err:' + err)
+        } else {
+            if (jokes) {
+                data = jokes
+                code = 0
+            } else {
+                data = null
+                code = 1
+            }
+            res.status(200)
+        }
+
+        let resData = data.map((item, idx) => {
+            let { title, content, id, type, tags } = item
+            return {
+                title, content, id, type, tags
+            }
         })
-    }
-    res.status(200)
+
+        let endkey = data[data.length - 1]._id;
+        // if (_callback) {
+        // res.type('text/javascript');
+        // res.send(_callback + '(' + JSON.stringify({
+        //     data,
+        //     date: Date.now(),
+        //     code
+        // }) + ')');
+        res.type('text/json');
+        res.send({
+            data: resData,
+            date: Date.now(),
+            endkey,
+            code
+        });
+        // }
+    })
 })
 
 

@@ -13,42 +13,16 @@ module.exports = async function (textData, fn) {
            content:textData.content,
            type:'text',
            id:textData.id,
-           index:textData.lastDataInfo.index
+           tags:textData.tags
        },function (err,doc) {
            if(err){
                console.error(err)
            }else{
-               textData.lastDataInfo.index++
                console.log(["INSERT SUCCESS"]+" ：" + doc.id);
            }
        })
     } catch (e) {
-        if (e) {
-            console.log(e)
-        }
+        console.log(e)
     }
-    if (fn) {
-        fn()
-    }
+    fn&&fn.constructor===Function&&fn();
 }
-
-// module.exports = async function (textData, fn) {
-//
-//     try {
-//         var oldData = await readFile(textsDataPath)
-//         oldData = JSON.parse(oldData.toString())
-//         if (!oldData.data) {
-//             oldData = {"data": []}
-//         }
-//         oldData.data.push(textData)
-//         let dataStr = JSON.stringify(oldData)
-//         await wirteFile(textsDataPath, dataStr)
-//     } catch (e) {
-//         if (e) {
-//             console.log(e)
-//         }
-//     }
-//     if (fn) {
-//         fn()
-//     }
-// }

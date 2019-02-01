@@ -1,28 +1,24 @@
-const puppeteer = require('puppeteer')
+const puppeteer = require('puppeteer');
 const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36';
-const saveImage = require('./common/saveImage')
-const saveVideo = require('./common/saveVideo')
+const saveImage = require('./common/saveImage');
+const saveVideo = require('./common/saveVideo');
 const saveText = require('./common/saveText');
 
 const JokeModel = require('./db/jokeSchema')
-
-// const {totalPageNum} = require('./config/default')
-
-
 const mongoose = require('mongoose')
-mongoose.connect('mongodb://localhost:27017/jokeCang',{
-  useNewUrlParser:true
-},function(err){
-  if(err){
-    console.log('error:'+err)
-  }else{
-    console.log('success')
-  }
+
+mongoose.connect('mongodb://localhost:27017/jokeCang', {
+    useNewUrlParser: true
+}, function (err) {
+    if (err) {
+        console.log('error:' + err)
+    } else {
+        console.log('success')
+    }
 })
 
-let lastDataInfo = {
-    index:0
-}
+let lastDataInfo = {}
+
 let saveData = async function (page) {
     console.log('elements loading')
     await page.waitFor('#mediaplayer')
@@ -36,50 +32,83 @@ let saveData = async function (page) {
 
     let currentId = page.url().match(/.com\/(\d+)\//)[1];
 
-    if(!currentId){
+    if (!currentId) {
         nextPage(page)
         return
     }
-
-    JokeModel.findById(currentId,async (err,joke)=>{
-        if(err){
+    // 根据id查看数据里是否已经存在了当前数据
+    JokeModel.findById(currentId, async (err, joke) => {
+        if (err) {
             console.log(err)
-            return
+            return;
         }
-        if(joke.length>0){
+        // 数据库里有当前页中数据    直接下一页
+        if (joke.length > 0) {
             console.log(`REPEAT :${currentId}`)
             nextPage(page)
-        }else{
+        } else {
+            // 当前页为 的joke 类型
+            let jokeType = imageIsHide === 'block' ?
+                'image' : vidoeIsHide === 'block' ?
+                    'video' : textIsHide === 'block' ?
+                        'text' : '';
+            // joke 标签            
+            let tags = await page.$$eval('.browser-bottom .bt-te .te', (eles) => {
+                let texts = eles.map((item, idx) => {
+                    return item.innerText
+                })
+                return texts
+            })
+            
+            
+            switch (jokeType) {
+                case 'image': {
+                    htmlStr = await page.$eval('.browser-pic', ele => ele.innerHTML);
+                    saveImage({
+                        htmlStr,
+                        title,
+                        id: currentId,
+                        lastDataInfo,
+                        tags
+                    }, function () {
+                        nextPage(page)
+                    })
+                    break;
+                }
+                case 'video': {
+                    htmlStr = await page.$eval('#mediaplayer', ele => ele.innerHTML);
+                    saveVideo({
+                        title,
+                        htmlStr,
+                        id: currentId,
+                        lastDataInfo,
+                        tags
+                    }, function () {
+                        nextPage(page)
+                    })
+                    break;
+                }
+                case 'text': {
+                    let content = await page.$eval('.browser-text ', ele => ele.innerHTML);
+                    saveText({
+                        title,
+                        content,
+                        id: currentId,
+                        lastDataInfo,
+                        tags
+                    }, function () {
+                        nextPage(page)
+                    })
+                    break;
+                }
+
+            }
             if (imageIsHide === 'block') {
-                htmlStr = await page.$eval('.browser-pic', ele => ele.innerHTML);
-                saveImage({
-                    htmlStr,
-                    title,
-                    id:currentId,
-                    lastDataInfo
-                },function () {
-                    nextPage(page)
-                })
+
             } else if (vidoeIsHide === 'block') {
-                htmlStr = await page.$eval('#mediaplayer', ele => ele.innerHTML);
-                saveVideo({
-                    title,
-                    htmlStr,
-                    id:currentId,
-                    lastDataInfo
-                },function () {
-                    nextPage(page)
-                })
+
             } else if (textIsHide === 'block') {
-                let content = await page.$eval('.browser-text ', ele => ele.innerHTML);
-                saveText({
-                    title,
-                    content,
-                    id:currentId,
-                    lastDataInfo
-                },function () {
-                    nextPage(page)
-                })
+
             }
         }
     })
@@ -93,7 +122,7 @@ let nextPage = async function (page) {
 
 module.exports = async () => {
     const browser = await puppeteer.launch({
-        // headless: false
+        headless: false
         // executablePath:chrome_exe
     });
     const page = await browser.newPage()
@@ -103,18 +132,16 @@ module.exports = async () => {
         width: 1920,
         height: 1080
     })
-    JokeModel.fetch(async (err,jokes)=>{
-        if(err){
+    JokeModel.fetch(async (err, jokes) => {
+        if (err) {
             console.log(err)
-            return ;
+            return;
         }
         var id
-        if(jokes.length===0){
-            lastDataInfo.index = 0
+        if (jokes.length === 0) {
             id = '4802089'
-        }else{
-            let lastData = jokes[jokes.length-1]
-            lastDataInfo.index  = lastData.index+1
+        } else {
+            let lastData = jokes[jokes.length - 1]
             id = lastData.id
         }
         await page.goto(`http://haha.sogou.com/${id}/`)
