@@ -68,9 +68,6 @@ typings/
 # next.js build output
 .next
 
-/截图
-/数据库操作
-/瓜子二手车
-/网易云歌词评论
-/非对称加密
-/UserCenter
+
+/doubleChromosphere/version.json
+/doubleChromosphere/*/*.*

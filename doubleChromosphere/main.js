@@ -291,7 +291,6 @@ const createNumbers = require('./createNumber');
 // const carList = await page.evaluate(cls => {
 //   console.log(cls)
 //   const catBoxs = Array.from($(cls).find('li a'));
-//
 //   const cnt = catBoxs.map(v => {
 //     const title = $(v).find('h2.t').text();
 //     const subTitle = $(v).find('div.t-i').text().split('|');
@@ -303,19 +302,4 @@ const createNumbers = require('./createNumber');
 //   })
 //   return cnt;
 // }, carCls)
-// // 输入框输入
-// await page.type('.txt.j-flag', musicName, { delay: 0 });
-// // 回车键
-// await page.keyboard.press('Enter')
-// // 等两秒
-// await page.waitFor(2000)
 
-// //e.childNodes
-// const selectedSongHref = await iframe.evaluate(e => {
-//   const songList = Array.from(e.childNodes);
-//   const idx = songList.findIndex(v => /儿子儿子/.test(v.childNodes[1].innerText.replace(/\s/g, '')));
-//   console.log(idx)
-//   return songList[idx].childNodes[1].firstChild.firstChild.firstChild.href;
-// }, SONG_LS_SELECTOR);
-
-// item.name()
