@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || '9875'
 const mongoose = require('mongoose')
-const JokeModel = require('./src/db/jokeSchema')
+const JokeModel = require('./JokeCrawler/db/jokeSchema')
 
 
 mongoose.connect('mongodb://localhost:27017/jokeCang', {

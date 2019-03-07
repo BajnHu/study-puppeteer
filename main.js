@@ -1,4 +1,4 @@
 
-const getSghh = require('./src/getSghh')
+const getSghh = require('./JokeCrawler/getSghh')
 
 getSghh()
