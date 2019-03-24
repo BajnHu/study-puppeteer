@@ -3,20 +3,20 @@
     "type": "NetEase",
     "url": "http://cai.163.com/shahao/ssq/red_100.html"
   },
-  {
-    "type": "_500_",
-    "url": "http://zx.500.com/ssq/zhuanjiashahao.php"
-  },
-  {
-    "type": "cjcp",
-    "url": "https://zst.cjcp.com.cn/shdd/ssq-hq.html"
-  },
-  {
-    "type": "_360_",
-    "url": "https://cp.360.cn/shdd/shax?LotID=220051&ItemID=20343&TopCount=20&r=0.487050345604362"
-  },
-  {
-    "type": "cp2y",
-    "url": "https://www.cp2y.com/ssq/ssqsh/"
-  }
+    {
+      "type": "_500_",
+      "url": "http://zx.500.com/ssq/zhuanjiashahao.php"
+    },
+    {
+      "type": "cjcp",
+      "url": "https://zst.cjcp.com.cn/shdd/ssq-hq.html"
+    },
+    {
+      "type": "_360_",
+      "url": "https://cp.360.cn/shdd/shax?LotID=220051&ItemID=20343&TopCount=20&r=0.487050345604362"
+    },
+    {
+      "type": "cp2y",
+      "url": "https://www.cp2y.com/ssq/ssqsh/"
+    }
 ]

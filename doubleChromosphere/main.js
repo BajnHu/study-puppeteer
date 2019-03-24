@@ -24,7 +24,8 @@ const createNumbers = require('./createNumber');
 
   // 打开浏览器
   const borow = await (puppeteer.launch({
-    headless: false
+    executablePath: path.resolve('../node_modules/puppeteer/.local-chromium/win64-637110/chrome-win/chrome.exe'),
+    // headless: false
   }));
 
   // 双色球 版本号(期号) 处理
@@ -36,7 +37,7 @@ const createNumbers = require('./createNumber');
       let json = await readFile(versionFile, 'utf-8');
       oldVersion = JSON.parse(json).version;
     } catch (err) {
-      console.log('sss', err)
+      console.log(err)
       oldVersion = false;
     }
 
@@ -78,50 +79,21 @@ const createNumbers = require('./createNumber');
 
   // 汇总 所有号码
   const concatBalls = async () => {
-    let newBallsData = {};
-    for (let key in ballData) {
-      let {redBall, blueBall} = ballData[key];
-      let redRes = [], blueRes = [];
-      // 过滤数据 只将数字类型的数据储存起来
-      redBall.forEach((item) => {
-        if (Number(item)) {
-          redRes.push(Number(item))
-        }
-      });
-      blueBall.forEach((item) => {
-        if (Number(item)) {
-          blueRes.push(Number(item))
-        }
-      });
-      // 对号码进行去重 重新排序
-      redRes = Array.from(new Set(redRes)).sort((a, b) => {
-        return a - b;
-      });
-      blueRes = Array.from(new Set(blueRes)).sort((a, b) => {
-        return a - b;
-      });
-      // 赋值
-      newBallsData[key] = {
-        redRes,
-        blueRes
-      }
-    }
 
     // 杀掉的号码 写入文件
     await mkdir(version)
 
     let writeComment1 = fs.createWriteStream(`./${version}/killedBalls.json`);
-    writeComment1.write(JSON.stringify(newBallsData), 'UTF8');
+    writeComment1.write(JSON.stringify(ballData), 'UTF8');
     writeComment1.end();
-
-    createNumbers(newBallsData,version);
+    createNumbers(ballData, version);
   }
   // 关闭页面
   const closePage = async (page) => {
 
     await page.close();
     // 已经爬取的页面数量 等于 数据总数 开始汇总
-    console.log('end '+pageIdx);
+    console.log('end ' + pageIdx);
     if (++pageIdx === urls.length) {
       await concatBalls();
       await borow.close();
@@ -140,52 +112,147 @@ const createNumbers = require('./createNumber');
     return ball;
   }
 
+  // 特殊 获取准确率
+  const getBallNumSA = async (className, page) => {
+
+    const ball = await page.evaluate(cls => {
+      let listBox = document.querySelectorAll(cls);
+      let list = listBox[1].querySelectorAll('li');
+      const arr = Array.from(list).map(item => {
+        return item.innerText.replace(/\s/g, '');
+      });
+      return arr;
+    }, className);
+    return ball;
+  }
+  const createNewBall = (balls, accuracys, type) => {
+    let arr = []
+    type = type || 1;
+
+    balls.forEach((item, idx) => {
+      let newIdx = parseInt(idx / type);
+      arr.push({
+        number: item,
+        accuracy: accuracys[newIdx]
+      });
+    });
+    return arr
+  }
+
+
   const NetEase = async (kind, page) => {
     const className = '.current .select';
-
+    const accuracyClassName = '.lightBlue .c_ba2636'
     const redBall = await getBallNum(className, page);
+    const redAccuracy = await getBallNum(accuracyClassName, page);
 
     await page.goto('http://zx.caipiao.163.com/shahao/ssq/blue_100.html')
     const blueBall = await getBallNum(className, page);
+    const blueAccuracy = await getBallNum(accuracyClassName, page);
 
-    ballData[kind] = {redBall, blueBall};
+    let sum = {
+      red: createNewBall(redBall, redAccuracy),
+      blue: createNewBall(blueBall, blueAccuracy),
+    }
+
+
+    ballData[kind] = sum;
     await closePage(page);
   }
 
   const _500_ = async (kind, page) => {
     const redClass = '.nub-ball.nb1';
     const blueClass = '.nub-ball.nb2';
+
+    const redAccuracyClass = '.nub-f12.nub-bg.nub-d3';
+
+
     const redBall = await getBallNum(redClass, page);
     const blueBall = await getBallNum(blueClass, page);
+    let arr = await page.evaluate(cls => {
+      const siblingElem = (elem) => {
+        let _nodes = [elem];
+        let prev = elem.previousSibling;
+        while (prev) {
+          if (prev.nodeType === 1) {
+            _nodes.unshift(prev);
+          }
+          prev = prev.previousSibling;
+        }
 
-    ballData[kind] = {
-      redBall,
-      blueBall
-    };
+        let next = elem.nextSibling;
+        while (next) {
+          if (next.nodeType === 1) {
+            _nodes.push(next);
+          }
+          next = next.nextSibling;
+        }
+        return _nodes;
+      }
+
+      const first = document.querySelector(cls);
+
+      let list = siblingElem(first);
+      let arr = list.map((item) => {
+        let val;
+        let child = item.querySelector('.nub-red');
+        if (Number(item.innerHTML.split('%')[0])) {
+          val = item.innerHTML
+        } else if (child && child.innerHTML==='全对') {
+          val = '100%'
+        } else {
+          val = ''
+        }
+        return val;
+      })
+      return arr
+    }, redAccuracyClass)
+    arr.shift();
+    arr.pop();
+
+    let redAccuracy = arr.splice(0,5);
+    let blueAccuracy = arr.slice();
+
+    let sum = {
+      red:createNewBall(redBall,redAccuracy),
+      blue:createNewBall(blueBall,blueAccuracy),
+    }
+
+    ballData[kind] = sum
     await closePage(page)
   }
 
   const cjcp = async (kind, page) => {
     const className = '.charttab_bg .winning_red';
-
-    const redBall = await getBallNum(className, page);
+    const accuracyClass = '.font_red_blod';
+    let redBall = await getBallNum(className, page);
+    let redAccuracy = await getBallNum(accuracyClass, page);
 
     await page.goto("https://zst.cjcp.com.cn/shdd/ssq-lq.html");
 
-    const blueBall = await getBallNum(className, page);
+    let blueBall = await getBallNum(className, page);
+    let blueAccuracy = await getBallNum(accuracyClass, page);
 
-    ballData[kind] = {
-      redBall,
-      blueBall
-    };
+
+    redBall = redBall.filter(item => Number(item))
+    blueBall = blueBall.filter(item => Number(item))
+
+    let sum = {
+      red: createNewBall(redBall, redAccuracy),
+      blue: createNewBall(blueBall, blueAccuracy),
+    }
+
+    ballData[kind] = sum;
 
     await closePage(page)
   }
 
   const _360_ = async (kind, page) => {
     const className = '.shdd-table-cont .tbg1';
+    const accuracyClass = 'strong.red';
 
-    const redBall = await getBallNum(className, page);
+    let redBall = await getBallNum(className, page);
+    let redAccuracy = await getBallNum(accuracyClass, page);
 
     await page.waitForSelector('.sh-blue');
     // 点击 蓝球列表
@@ -193,35 +260,55 @@ const createNumbers = require('./createNumber');
 
     await page.waitForSelector('.shdd-table-cont');
 
-    const blueBall = await getBallNum(className, page);
+    let blueBall = await getBallNum(className, page);
+    let blueAccuracy = await getBallNum(accuracyClass, page);
 
-    ballData[kind] = {
-      redBall
-      , blueBall
-    };
+    redBall = redBall.filter(item => Number(item))
+    blueBall = blueBall.filter(item => Number(item))
+    let sum = {
+      red: createNewBall(redBall, redAccuracy),
+      blue: createNewBall(blueBall, blueAccuracy),
+    }
+
+    ballData[kind] = sum
 
     await closePage(page)
   }
 
   const cp2y = async (kind, page) => {
     const className = '.expert';
+    const accuracyClass = '.yellow_bg1 .killNumber_body_div2'
+
     const redBall1 = await getBallNum(className, page);
+    const redAccuracy1 = await getBallNumSA(accuracyClass, page)
+
     await page.goto('https://www.cp2y.com/ssq/ssqsh/h2/');
     const redBall2 = await getBallNum(className, page);
+    const redAccuracy2 = await getBallNumSA(accuracyClass, page)
+
     await page.goto('https://www.cp2y.com/ssq/ssqsh/h3/');
     const redBall3 = await getBallNum(className, page);
-    const redBall = redBall1.concat(redBall2).concat(redBall3);
+    const redAccuracy3 = await getBallNumSA(accuracyClass, page)
+
 
     await page.goto('https://www.cp2y.com/ssq/ssqsh/l1/');
     const blueBall1 = await getBallNum(className, page);
+    const blueAccuracy1 = await getBallNumSA(accuracyClass, page)
+
     await page.goto('https://www.cp2y.com/ssq/ssqsh/l2/');
     const blueBall2 = await getBallNum(className, page);
-    const blueBall = blueBall1.concat(blueBall2);
+    const blueAccuracy2 = await getBallNumSA(accuracyClass, page)
 
-    ballData[kind] = {
-      redBall
-      , blueBall
-    };
+    let sum = {
+      red1: createNewBall(redBall1, redAccuracy1),
+      red2: createNewBall(redBall2, redAccuracy2, 2),
+      red3: createNewBall(redBall3, redAccuracy3, 3),
+      blue1: createNewBall(blueBall1, blueAccuracy1),
+      blue2: createNewBall(blueBall2, blueAccuracy2, 2)
+    }
+
+
+    ballData[kind] = sum
 
     await closePage(page)
   }
@@ -235,10 +322,11 @@ const createNumbers = require('./createNumber');
     killedBalls = false;
   }
 
-  console.log(killedBalls);
   if (killedBalls) {
+    console.log('had killedBalls, No crawling is required ,create Numbers');
+    await borow.close();
     createNumbers(killedBalls,version);
-  }else{
+  } else {
     urls.forEach(async (item, idx) => {
       (async (item) => {
         const page = await borow.newPage();
@@ -279,7 +367,6 @@ const createNumbers = require('./createNumber');
       })(item, idx);
     });
   }
-
 
 
 })();
